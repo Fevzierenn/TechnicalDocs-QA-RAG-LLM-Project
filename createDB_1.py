@@ -6,7 +6,7 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma  # Updated library
 from langchain_huggingface import HuggingFaceEmbeddings  # Updated library
-
+from langchain.text_splitter import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter, Language
 
 # 1. SETTINGS AND PATH CONFIGURATION
 
@@ -89,6 +89,42 @@ def get_chunks_strategy_smart(docs):
 
 # 4. VECTOR DATABASE GENERATOR
 
+def get_chunks_strategy_optimized(docs):
+    """
+    STRATEGY B+: ENHANCED SECTION-BASED
+    Optimized for Java Technical Articles (Baeldung style)
+    """
+
+
+    headers_to_split_on = [
+        ("#", "Header 1"),
+        ("##", "Header 2"),
+        ("###", "Header 3"),
+    ]
+
+
+    markdown_splitter = MarkdownHeaderTextSplitter(
+        headers_to_split_on=headers_to_split_on,
+        strip_headers=False
+    )
+
+    md_header_splits = []
+    for doc in docs:
+        splits = markdown_splitter.split_text(doc.page_content)
+        for split in splits:
+            # Kaynak bilgisini koru
+            split.metadata['source'] = doc.metadata.get('source', 'unknown')
+            # İstersen burada ekstra metadata temizliği yapabilirsin
+        md_header_splits.extend(splits)
+    text_splitter = RecursiveCharacterTextSplitter.from_language(
+        language=Language.JAVA,
+        chunk_size=1000,
+        chunk_overlap=200
+    )
+    final_chunks = text_splitter.split_documents(md_header_splits)
+
+    return final_chunks
+
 
 def create_vector_db(docs, chunk_strategy, embed_model_key):
     db_name = f"vector_db_{chunk_strategy}_{embed_model_key}"
@@ -98,7 +134,8 @@ def create_vector_db(docs, chunk_strategy, embed_model_key):
     if chunk_strategy == "fixed":
         chunks = get_chunks_strategy_fixed(docs)
     else:
-        chunks = get_chunks_strategy_smart(docs)
+        #chunks = get_chunks_strategy_smart(docs)
+        chunks = get_chunks_strategy_optimized(docs)
 
     print(f"\n------------------------------------------------")
     print(f"GENERATING: {db_name}")

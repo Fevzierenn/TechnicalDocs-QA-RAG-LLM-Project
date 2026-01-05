@@ -2,22 +2,22 @@
     "vector_db_smart_minilm": {
         "chunk_strategy": "smart",
         "embedding_model": "minilm",
-        "encoding_time_sec": 41.05,
+        "encoding_time_sec": 39.53,
         "embedding_dimension": 384,
-        "total_chunks": 1885
+        "total_chunks": 1962
     },
     "vector_db_fixed_minilm": {
         "chunk_strategy": "fixed",
         "embedding_model": "minilm",
-        "encoding_time_sec": 41.64,
+        "encoding_time_sec": 40.54,
         "embedding_dimension": 384,
         "total_chunks": 1608
     },
     "vector_db_smart_bge": {
         "chunk_strategy": "smart",
         "embedding_model": "bge",
-        "encoding_time_sec": 97.1,
+        "encoding_time_sec": 87.86,
         "embedding_dimension": 384,
-        "total_chunks": 1885
+        "total_chunks": 1962
     }
 }
