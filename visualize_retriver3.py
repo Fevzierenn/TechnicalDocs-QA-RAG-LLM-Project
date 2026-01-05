@@ -10,25 +10,29 @@ COMMON_COLLECTION_NAME = "langchain"
 
 # Models to Compare
 DBS_TO_COMPARE = {
-    "Old (Fixed)": "vector_db_fixed_minilm",
-    "New (Smart)": "vector_db_smart_minilm"
+    "1. Old (Fixed Strategy)": "vector_db_fixed_minilm",
+    "2. New (Smart/Optimized)": "vector_db_smart_minilm"
 }
 
+# Embedding model
 minilm_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
     model_name="all-MiniLM-L6-v2"
 )
 
 
 def inspect_retrieval(question_text, answer_text, n_results=3):
-    print(f"\n{'#' * 100}")
-    print(f"QUESTION: {question_text}")
-    print(f"GROUND TRUTH (Summary): {str(answer_text)[:120]}...")
-    print(f"{'#' * 100}")
+    print(f"\n{'=' * 100}")
+    print(f"Question: {question_text}")
+    print(f"Truth Answer (Summary): {str(answer_text)[:120]}...")
+    print(f"{'=' * 100}")
 
     for display_name, folder_name in DBS_TO_COMPARE.items():
         full_db_path = os.path.join(BASE_PATH, folder_name)
-        print(f"\n   MODEL: {display_name}")
-        print(f"   {'-' * 50}")
+        print(f"\n   >>> MODEL: {display_name}")
+
+        if not os.path.exists(full_db_path):
+            print(f"      ALERT: File not found -> {full_db_path}")
+            continue
 
         try:
             client = chromadb.PersistentClient(path=full_db_path)
@@ -39,45 +43,51 @@ def inspect_retrieval(question_text, answer_text, n_results=3):
                 n_results=n_results
             )
 
-            # Loop through the results
-            for i in range(n_results):
+            # Sonuçları listele
+            for i in range(len(results['documents'][0])):
                 doc = results['documents'][0][i]
                 meta = results['metadatas'][0][i]
-                dist = results['distances'][0][i]
+                dist = results['distances'][0][i]  # L2 Distance: much better when close to 0 zero.
 
-                # Make reading easier
-                preview_text = doc.replace('\n', ' ')[:250]  # First 250 characters
+                source_file = os.path.basename(meta.get('source', 'Unknown'))
+                h1 = meta.get('Header 1', '')
+                h2 = meta.get('Header 2', '')
+                section_info = f"{h1} > {h2}" if h1 or h2 else "No Section Info"
 
-                print(f"[Rank {i + 1} | Score: {dist:.4f}]")
-                print(f"Source: {os.path.basename(meta.get('source', 'Unknown'))}")
-                print(f"Content: \"{preview_text}...\"")
-                print("     " + "." * 40)
+
+                print(f"   [Sıra {i + 1} | Uzaklık Skor: {dist:.4f}]")
+                print(f" Source: {source_file}")
+                print(f" Section:  {section_info}")
+                print(f" Content: \"{doc.replace(chr(10), ' ')[:250]}...\"")
+                print("   " + "-" * 40)
 
         except Exception as e:
             print(f"      Error: {e}")
 
 
-# --- EXECUTION ---
+# --- MAIN ---
 if __name__ == "__main__":
-    print("Starting Top-3 Chunk Analysis...")
+    print("--- Starting Top 3 Chunk Analysis...3 ---")
 
     try:
-        df = pd.read_csv(CSV_PATH, sep=';', encoding='cp1252')
+        try:
+            df = pd.read_csv(CSV_PATH, sep=';', encoding='utf-8')
+        except UnicodeDecodeError:
+            df = pd.read_csv(CSV_PATH, sep=';', encoding='cp1252')
         df.columns = df.columns.str.strip().str.lower()
         q_col = next((c for c in df.columns if 'question' in c or 'soru' in c), None)
         a_col = next((c for c in df.columns if 'answer' in c or 'cevap' in c), None)
 
-        if not q_col: raise ValueError("Question column not found!")
+        if not q_col: raise ValueError("Soru sütunu (question) bulunamadı!")
 
     except Exception as e:
         print(f"CSV Error: {e}")
         exit()
-
-    # 3 Random Questions
+    #Random Questions
     sample_df = df.sample(3)
 
     for index, row in sample_df.iterrows():
-        inspect_retrieval(row[q_col], row[a_col] if a_col else "None")
-        input("\nPress Enter to proceed to the next question...")
+        inspect_retrieval(row[q_col], row[a_col] if a_col else "Yok")
+        input("\nDiğer soruya geçmek için ENTER'a bas...")
 
-    print("\nAnalysis finished.")
+    print("\nAnaliz tamamlandı.")
