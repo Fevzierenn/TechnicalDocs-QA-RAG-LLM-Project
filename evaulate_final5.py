@@ -12,7 +12,7 @@ from tqdm import tqdm
 # ==========================================
 # 1. CONFIGURATION
 # ==========================================
-MODELS_TO_TEST = ["llama3", "phi3", "qwen3:8b", "gemma3:4b"]
+MODELS_TO_TEST = ["qwen3:8b","gemma3:4b"]
 
 VECTOR_DB_PATH = r"D:\LLM_PROJECT-DEEPLEARNING\vector_dbs\vector_db_smart_minilm"
 COLLECTION_NAME = "langchain"
@@ -27,6 +27,7 @@ QUESTION:
 {user_question}
 INSTRUCTIONS:
 - Use only the information in the context.
+-Use just the information inside the context, dont answer from models knowledge.
 - If the answer is not in the context, say "I don't know based on the given documents."
 - Answer concisely in English.
 """
@@ -96,7 +97,7 @@ def run_final_evaluation():
     db = Chroma(persist_directory=VECTOR_DB_PATH, embedding_function=ef, collection_name=COLLECTION_NAME)
 
     all_logs = []
-    csv_filename = "RAG_Final_REPORT.csv"
+    csv_filename = "RAG_Final_Results_Report2.csv"
 
     for model_name in MODELS_TO_TEST:
         print(f"\n[INFO] STARTING MODEL: {model_name.upper()}")
