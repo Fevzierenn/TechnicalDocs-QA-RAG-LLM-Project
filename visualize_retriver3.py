@@ -43,7 +43,7 @@ def inspect_retrieval(question_text, answer_text, n_results=3):
                 n_results=n_results
             )
 
-            # Sonuçları listele
+            # List results
             for i in range(len(results['documents'][0])):
                 doc = results['documents'][0][i]
                 meta = results['metadatas'][0][i]
@@ -54,8 +54,7 @@ def inspect_retrieval(question_text, answer_text, n_results=3):
                 h2 = meta.get('Header 2', '')
                 section_info = f"{h1} > {h2}" if h1 or h2 else "No Section Info"
 
-
-                print(f"   [Sıra {i + 1} | Uzaklık Skor: {dist:.4f}]")
+                print(f"   [Rank {i + 1} | Distance Score: {dist:.4f}]")
                 print(f" Source: {source_file}")
                 print(f" Section:  {section_info}")
                 print(f" Content: \"{doc.replace(chr(10), ' ')[:250]}...\"")
@@ -74,20 +73,24 @@ if __name__ == "__main__":
             df = pd.read_csv(CSV_PATH, sep=';', encoding='utf-8')
         except UnicodeDecodeError:
             df = pd.read_csv(CSV_PATH, sep=';', encoding='cp1252')
+
         df.columns = df.columns.str.strip().str.lower()
+
+        # Kept 'soru' and 'cevap' checks in case the CSV still has Turkish headers
         q_col = next((c for c in df.columns if 'question' in c or 'soru' in c), None)
         a_col = next((c for c in df.columns if 'answer' in c or 'cevap' in c), None)
 
-        if not q_col: raise ValueError("Soru sütunu (question) bulunamadı!")
+        if not q_col: raise ValueError("Question column not found!")
 
     except Exception as e:
         print(f"CSV Error: {e}")
         exit()
-    #Random Questions
+
+    # Random Questions
     sample_df = df.sample(3)
 
     for index, row in sample_df.iterrows():
-        inspect_retrieval(row[q_col], row[a_col] if a_col else "Yok")
-        input("\nDiğer soruya geçmek için ENTER'a bas...")
+        inspect_retrieval(row[q_col], row[a_col] if a_col else "N/A")
+        input("\nPress ENTER to proceed to the next question...")
 
-    print("\nAnaliz tamamlandı.")
+    print("\nAnalysis complete.")
