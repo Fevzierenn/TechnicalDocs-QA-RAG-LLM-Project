@@ -124,7 +124,7 @@ def run_groq_evaluation():
         return
 
     all_logs = []
-    csv_filename = f"RAG_API_GROQ_{MODEL_NAME}_Results.csv"
+    csv_filename = f"RAG_API_GROQ2_{MODEL_NAME}_Results.csv"
 
     print(f"\nStarting Test...")
 
