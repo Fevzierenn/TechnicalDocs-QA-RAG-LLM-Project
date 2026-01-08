@@ -112,9 +112,7 @@ def get_chunks_strategy_optimized(docs):
     for doc in docs:
         splits = markdown_splitter.split_text(doc.page_content)
         for split in splits:
-            # Kaynak bilgisini koru
             split.metadata['source'] = doc.metadata.get('source', 'unknown')
-            # İstersen burada ekstra metadata temizliği yapabilirsin
         md_header_splits.extend(splits)
     text_splitter = RecursiveCharacterTextSplitter.from_language(
         language=Language.JAVA,

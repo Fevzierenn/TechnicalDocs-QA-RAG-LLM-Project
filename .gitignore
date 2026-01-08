@@ -13,3 +13,5 @@ __pycache__/
 vector_dbs/
 baeldung_articles_markdown/
 *.csv
+.env
+
