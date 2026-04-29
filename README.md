@@ -95,7 +95,7 @@ Performance is measured using:
 
 ---
 
-## 🔎 Embedding Models Evaluation
+##  Embedding Models Evaluation
 
 ### Tested Models
 - sentence-transformers/all-MiniLM-L6-v2
